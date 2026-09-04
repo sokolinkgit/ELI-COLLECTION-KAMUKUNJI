@@ -404,6 +404,28 @@ h1, h2, h3, .display {
 }
 .add-btn:hover { background: var(--terracotta); }
 
+/* Card actions: add to cart + order on WhatsApp */
+.card__actions {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.btn--sm {
+  padding: 10px 12px;
+  font-size: 0.78rem;
+  gap: 6px;
+  line-height: 1.2;
+  text-align: center;
+}
+.btn--sm svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+.btn--wa:hover { filter: brightness(1.07); }
+
 /* Split story */
 .split {
   display: grid;
