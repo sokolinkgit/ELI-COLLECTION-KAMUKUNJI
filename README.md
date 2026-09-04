@@ -1,6 +1,8 @@
 # ELI COLLECTION KAMUKUNJI
 
-E-commerce site for **ELI COLLECTION KAMUKUNJI** — floor carpets and mats.
+E-commerce site for **ELI COLLECTION KAMUKUNJI** — carpets, mats and wall-to-wall in Nairobi.
+
+Stock and naming follow the Kamukunji market: Turkish & Persian carpets, fluffy & shaggy, 3D & HD prints, wall-to-wall (Delta / VIP / carpet tiles), mosque carpet & musalla, runners & bedside, bathroom mats, and door & kitchen mats. Room carpets are sized in feet (5×8, 6×9, 7×10); wall-to-wall is priced per square metre.
 
 - **WhatsApp:** 0725 856 946
 - **Stack:** HTML, CSS, JavaScript only (no build step)

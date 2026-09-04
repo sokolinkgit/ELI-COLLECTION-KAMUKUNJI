@@ -46,7 +46,7 @@
         qty,
       });
     setCart(cart);
-    toast(`${p.name} added to bag`);
+    toast(`${p.name} added to cart`);
     openDrawer();
   }
 
@@ -87,6 +87,10 @@
   }
 
   function productCard(p) {
+    const size = p.sizes.find((s) => s.default) || p.sizes[0];
+    const waMsg = `Hello ELI COLLECTION KAMUKUNJI, I would like to order the ${p.name} (${size.label}) at ${money(
+      size.price
+    )}. Is it in stock?`;
     return `
       <article class="card">
         <a class="card__media" href="product.html?id=${p.id}">
@@ -98,7 +102,10 @@
           <h3><a href="product.html?id=${p.id}">${p.name}</a></h3>
           <div class="card__row">
             <p class="price">${money(p.price)}${p.compareAt ? `<s>${money(p.compareAt)}</s>` : ""}</p>
-            <button class="add-btn" data-add="${p.id}" aria-label="Add ${p.name} to bag">+</button>
+          </div>
+          <div class="card__actions">
+            <button class="btn btn--primary btn--sm" data-add="${p.id}" aria-label="Add ${p.name} to bag">Add to cart</button>
+            <a class="btn btn--wa btn--sm" href="${WA}?text=${encodeURIComponent(waMsg)}" target="_blank" rel="noopener" aria-label="Order ${p.name} on WhatsApp">${waIcon()} Order on WhatsApp</a>
           </div>
         </div>
       </article>`;
@@ -112,8 +119,8 @@
       <div class="announce" aria-hidden="true">
         <div class="announce__track">
           ${Array(2).fill(`
-            <span>Karibu · Floor carpets &amp; mats</span>
-            <span>Free Nairobi delivery over ${money(STORE.freeDeliveryFrom)}</span>
+            <span>Karibu · Carpets, mats &amp; wall-to-wall</span>
+            <span>${STORE.deliveryText}</span>
             <span>WhatsApp ${STORE.phoneDisplay}</span>
             <span>Pickup at Kamukunji Market</span>
             <span>M-Pesa or cash on confirmation</span>
@@ -158,7 +165,7 @@
               <span class="logo__mark">E</span>
               <span class="logo__text"><strong>ELI COLLECTION</strong><small>KAMUKUNJI</small></span>
             </a>
-            <p style="margin-top:16px;max-width:36ch">Floor carpets and mats from the heart of Kamukunji Market — Persian rugs, prayer mats, door mats, runners and cut-to-size carpet.</p>
+            <p style="margin-top:16px;max-width:36ch">Carpets and mats from the heart of Kamukunji Market — Turkish carpets, fluffy and shaggy carpets, 3D &amp; HD prints, wall-to-wall, mosque carpet, bedside runners and bathroom and door mats.</p>
           </div>
           <div>
             <h4>Shop</h4>
@@ -180,7 +187,7 @@
             <ul>
               <li><a href="tel:${STORE.phoneLocal}">${STORE.phoneDisplay}</a></li>
               <li><a href="${WA}" target="_blank" rel="noopener">WhatsApp order desk</a></li>
-              <li>Pickup or Nairobi delivery</li>
+              <li>${STORE.deliveryText} · pickup at the market</li>
               <li>M-Pesa on confirmation</li>
             </ul>
             <a class="btn btn--wa" style="margin-top:14px" href="${WA}?text=${encodeURIComponent("Hello ELI COLLECTION KAMUKUNJI, I would like help choosing a carpet.")}" target="_blank" rel="noopener">Chat on WhatsApp</a>
@@ -207,7 +214,7 @@
             <p class="eyebrow">Search the floor</p>
             <button class="icon-btn" data-close aria-label="Close search">${icon("close")}</button>
           </div>
-          <input type="search" id="search-input" placeholder="Try prayer mat, Persian, door mat…" autocomplete="off">
+          <input type="search" id="search-input" placeholder="Try Turkish, fluffy, 3D, wall to wall, door mat…" autocomplete="off">
           <div class="search-results" id="search-results"></div>
         </div>
       </div>
@@ -257,9 +264,10 @@
       )
       .join("");
     const sub = cartTotal();
-    const delivery = sub >= STORE.freeDeliveryFrom ? 0 : STORE.nairobiFee;
+    const delivery = deliveryFee(sub);
     foot.innerHTML = `
       <div class="sum-row"><span>Subtotal</span><span>${money(sub)}</span></div>
+      <div class="sum-row"><span>Nairobi delivery</span><span>${money(delivery)}</span></div>
       <a class="btn btn--primary btn--full" href="cart.html" style="margin-top:12px">Checkout</a>
       <a class="btn btn--ghost btn--full" href="shop.html" style="margin-top:8px">Continue shopping</a>
     `;
@@ -352,7 +360,7 @@
         <div class="wrap hero__content">
           <p class="eyebrow" style="color:var(--gold-soft)">Kamukunji · Nairobi</p>
           <h1>Floors worth coming home to.</h1>
-          <p class="lead">Persian rugs, prayer mats, door mats and cut-to-size carpet — chosen on the floor of Kamukunji Market, sent across Nairobi.</p>
+          <p class="lead">Turkish carpets, fluffy and shaggy carpets, 3D &amp; HD prints, wall-to-wall cut to your room, bedside runners and bathroom and door mats — 5×8, 6×9, 7×10 — chosen on the floor of Kamukunji Market, sent across Nairobi.</p>
           <div class="hero__actions">
             <a class="btn btn--primary" href="shop.html">Shop the collection</a>
             <a class="btn btn--ghost" href="${WA}?text=${encodeURIComponent("Hello ELI COLLECTION, I would like to see what you have in stock today.")}" target="_blank" rel="noopener">WhatsApp ${STORE.phoneDisplay}</a>
@@ -360,9 +368,9 @@
         </div>
       </section>
       <div class="stats">
-        <div class="stat"><b>16+</b><span>Pieces on the floor</span></div>
-        <div class="stat"><b>Cut</b><span>Carpet from the roll</span></div>
-        <div class="stat"><b>Nairobi</b><span>Delivery &amp; pickup</span></div>
+        <div class="stat"><b>${PRODUCTS.length}+</b><span>Lines on the floor</span></div>
+        <div class="stat"><b>Cut</b><span>Wall-to-wall from the roll</span></div>
+        <div class="stat"><b>Nairobi</b><span>${STORE.deliveryText.toLowerCase()} &amp; pickup</span></div>
         <div class="stat"><b>${STORE.phoneDisplay}</b><span>WhatsApp desk</span></div>
       </div>
       <section class="section">
@@ -398,11 +406,11 @@
         </div>
       </section>
       <section class="split">
-        <img src="assets/images/about-store.jpg" alt="Inside ELI COLLECTION at Kamukunji">
+        <img src="assets/images/shop-interior.jpg" alt="Inside ELI COLLECTION at Kamukunji">
         <div class="split__copy">
           <p class="eyebrow" style="color:var(--gold)">Our floor</p>
           <h2>A Kamukunji yard with a showroom finish.</h2>
-          <p>We buy, cut and sell carpets the way this market always has — rolls standing at the back, mats folded on timber benches, prayer rugs stacked by Friday demand.</p>
+          <p>We buy, cut and sell carpets the way this market always has — rolls standing at the back, mats folded on timber benches, musalla stacked by Friday demand.</p>
           <p>Walk in, stand on the piece, take it the same day. Or send a room photo on WhatsApp and we will size it for you.</p>
           <a class="btn btn--ghost" href="about.html">Read the story</a>
         </div>
@@ -417,8 +425,8 @@
           </div>
           <div class="benefits">
             <article class="benefit"><div class="num">01</div><h3>See it, feel it</h3><p>Every piece on this site is the sort of stock we keep on the Kamukunji floor. Come stand on it.</p></article>
-            <article class="benefit"><div class="num">02</div><h3>Sized for Kenya</h3><p>We cut broadloom to your room and keep living-room, hallway and prayer sizes that actually fit Nairobi houses.</p></article>
-            <article class="benefit"><div class="num">03</div><h3>Delivery that works</h3><p>Pickup at the market, Nairobi drop-off, or a courier quote upcountry — arranged on WhatsApp.</p></article>
+            <article class="benefit"><div class="num">02</div><h3>Sized for Kenya</h3><p>We cut wall-to-wall to your room in square metres, and stock the 5×8, 6×9 and 7×10 foot sizes that actually fit Nairobi houses.</p></article>
+            <article class="benefit"><div class="num">03</div><h3>Delivery available</h3><p>Pickup at the market, Nairobi drop-off, or a courier quote upcountry — arranged on WhatsApp.</p></article>
             <article class="benefit"><div class="num">04</div><h3>Pay the Kenyan way</h3><p>Confirm on WhatsApp, then M-Pesa or cash. No surprise till numbers in a checkout you cannot trust.</p></article>
           </div>
         </div>
@@ -449,10 +457,10 @@
           </div>
           <div class="mosaic">
             <a href="shop.html"><img src="assets/images/hero.jpg" alt="Showroom"></a>
-            <a href="shop.html?cat=shag"><img src="assets/images/folded-mats.jpg" alt="Folded mats"></a>
-            <a href="shop.html?cat=prayer"><img src="assets/images/prayer-alnoor.jpg" alt="Prayer mat"></a>
-            <a href="shop.html?cat=door"><img src="assets/images/doormat-coir.jpg" alt="Door mat"></a>
-            <a href="shop.html?cat=modern"><img src="assets/images/rolled-carpets.jpg" alt="Rolled carpets"></a>
+            <a href="shop.html?cat=shaggy"><img src="assets/images/folded-mats.jpg" alt="Folded fluffy carpets"></a>
+            <a href="shop.html?cat=mosque"><img src="assets/images/mosque-carpet.jpg" alt="Mosque carpet roll"></a>
+            <a href="shop.html?cat=doormats"><img src="assets/images/door-mat.jpg" alt="Door mat"></a>
+            <a href="shop.html?cat=walltowall"><img src="assets/images/wall-to-wall-rolls.jpg" alt="Wall to wall carpet rolls"></a>
           </div>
         </div>
       </section>
@@ -485,7 +493,7 @@
       <div class="wrap page-hero">
         <p class="eyebrow">The collection</p>
         <h1>Shop carpets &amp; mats</h1>
-        <p class="muted" style="margin-top:8px;max-width:48ch">Filter by department. Sizes and final prices confirm on the product — or WhatsApp us a room photo.</p>
+        <p class="muted" style="margin-top:8px;max-width:48ch">Filter by department. Sizes are in feet — 5×8, 6×9, 7×10 — and wall-to-wall is priced per square metre. Send us your room measurements on WhatsApp and we size it for you.</p>
       </div>
       <div class="wrap shop-layout" style="padding-bottom:80px">
         <aside class="filters">
@@ -572,10 +580,10 @@
               <span class="muted" style="align-self:center">${p.stock} on the floor</span>
             </div>
             <div class="pdp__actions">
-              <button class="btn btn--primary" id="add-pdp">Add to bag</button>
+              <button class="btn btn--primary" id="add-pdp">Add to cart</button>
               <a class="btn btn--wa" target="_blank" rel="noopener" href="${WA}?text=${encodeURIComponent(
-                `Hello ELI COLLECTION KAMUKUNJI, I am interested in the ${p.name} (${size.label}) at ${money(size.price)}. Is it available?`
-              )}">Ask on WhatsApp</a>
+                `Hello ELI COLLECTION KAMUKUNJI, I would like to order the ${p.name} (${size.label}) at ${money(size.price)}. Is it in stock?`
+              )}">Order on WhatsApp</a>
             </div>
             <div class="meta-list">
               <div><b>Material</b> — ${p.material}</div>
@@ -594,11 +602,9 @@
                   ? p.description
                   : tab === "care"
                   ? p.care
-                  : `Pickup at Kamukunji Market is free. Nairobi delivery is ${money(
+                  : `Delivery is available. Pickup at Kamukunji Market is free. Nairobi drop-off is ${money(
                       STORE.nairobiFee
-                    )}, or free on orders over ${money(
-                      STORE.freeDeliveryFrom
-                    )}. Upcountry goes by courier — we quote on WhatsApp after you share a location. Confirm stock, then pay by M-Pesa or cash.`
+                    )}. Upcountry goes by courier — we quote on WhatsApp once you share a location. Confirm stock, then pay by M-Pesa or cash.`
               }
             </div>
           </div>
@@ -638,7 +644,8 @@
   }
 
   function deliveryFee(sub) {
-    return sub >= STORE.freeDeliveryFrom ? 0 : STORE.nairobiFee;
+    // Flat Nairobi drop-off fee. Pickup at the market is free.
+    return sub > 0 ? STORE.nairobiFee : 0;
   }
 
   function orderMessage(form) {
@@ -653,7 +660,7 @@
 ${lines}
 
 Subtotal: ${money(sub)}
-${form.fulfillment === "pickup" ? "Pickup: Kamukunji Market (free)" : `Nairobi delivery: ${del ? money(del) : "FREE"}`}
+${form.fulfillment === "pickup" ? "Pickup: Kamukunji Market (free)" : `Nairobi delivery: ${money(del)}`}
 *Total: ${money(sub + del)}*
 
 Name: ${form.name}
@@ -677,7 +684,7 @@ Please confirm stock and payment (M-Pesa / cash).`;
         <div class="wrap page-hero" style="padding-bottom:80px;text-align:center">
           <p class="eyebrow">Bag</p>
           <h1>Nothing in the bag yet</h1>
-          <p class="muted" style="margin:12px auto 22px;max-width:40ch">The showroom is full. Persian rugs, prayer mats, door mats — start with a department.</p>
+          <p class="muted" style="margin:12px auto 22px;max-width:40ch">The floor is full — Turkish carpets, fluffy and shaggy, 3D prints, wall-to-wall, mosque carpet and mats. Start with a department.</p>
           <a class="btn btn--primary" href="shop.html">Shop the collection</a>
         </div>`;
       return;
@@ -713,9 +720,9 @@ Please confirm stock and payment (M-Pesa / cash).`;
         <aside class="summary">
           <h2>Order</h2>
           <div class="sum-row"><span>Subtotal</span><b>${money(sub)}</b></div>
-          <div class="sum-row"><span>Nairobi delivery</span><b>${sub >= STORE.freeDeliveryFrom ? "FREE" : money(del)}</b></div>
+          <div class="sum-row"><span>Nairobi delivery</span><b>${money(del)}</b></div>
           <div class="sum-row total"><span>Total</span><span>${money(sub + del)}</span></div>
-          <p class="note">Checkout sends this order to our WhatsApp desk (${STORE.phoneDisplay}). We confirm stock, then you pay by M-Pesa or cash.</p>
+          <p class="note">${STORE.deliveryText} — pickup at Kamukunji Market is free, Nairobi drop-off is ${money(STORE.nairobiFee)}, upcountry is quoted on WhatsApp. Checkout sends this order to our desk (${STORE.phoneDisplay}). We confirm stock, then you pay by M-Pesa or cash.</p>
           <form id="order-form">
             <div class="field"><label>Full name</label><input name="name" required placeholder="Your name"></div>
             <div class="field"><label>Phone</label><input name="phone" required placeholder="07xx xxx xxx"></div>
@@ -741,8 +748,9 @@ Please confirm stock and payment (M-Pesa / cash).`;
       </div>
     `;
     const form = $("#order-form");
-    form.fulfillment.addEventListener("change", () => {
-      $("#loc-field").style.display = form.fulfillment.value === "pickup" ? "none" : "grid";
+    const fulfillment = form.elements.fulfillment;
+    fulfillment.addEventListener("change", () => {
+      $("#loc-field").style.display = fulfillment.value === "pickup" ? "none" : "grid";
     });
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -762,9 +770,9 @@ Please confirm stock and payment (M-Pesa / cash).`;
         <h1>ELI COLLECTION, Kamukunji.</h1>
       </div>
       <div class="wrap about-grid" style="padding-bottom:72px">
-        <img src="assets/images/about-store.jpg" alt="Inside the Kamukunji carpet yard">
+        <img src="assets/images/shop-interior.jpg" alt="Inside the Kamukunji carpet yard">
         <div class="about-copy">
-          <p>We deal in floor carpets and mats. That is the whole sentence. Persian and oriental rugs for sitting rooms, kilims and tribal weaves, shag for bedrooms, prayer mats for home and musalla, coir for the door, foam for the bath, runners for the cooker line, and broadloom cut from the roll when a room needs wall-to-wall.</p>
+          <p>We deal in carpets and mats. That is the whole sentence. Turkish and Persian carpets for sitting rooms, fluffy and shaggy for bedrooms and TV rooms, 3D and HD prints for rented flats, mosque carpet and musalla, coral fleece and diatomite for the bathroom, anti-slip mats for the kitchen and door, and wall-to-wall cut from the roll when a room needs carpet from edge to edge.</p>
           <p>Kamukunji is where Nairobi still bargains with its hands. Our yard keeps that — rolls at the back, benches of folded mats, a gallery of hanging runners — and we finish it so you can choose without shouting over the aisle.</p>
           <p>Send a WhatsApp to <a href="${WA}" target="_blank" rel="noopener"><b>${STORE.phoneDisplay}</b></a>. Tell us the room. We will tell you the size, the fibre, and whether it is on the floor today.</p>
           <p class="muted">${STORE.hours}<br>${STORE.address}</p>
@@ -797,7 +805,7 @@ Please confirm stock and payment (M-Pesa / cash).`;
           </div>
           <div class="benefit">
             <h3>How orders work</h3>
-            <p>Add pieces to your bag, send the order on WhatsApp, we confirm stock, you pay M-Pesa or cash, we pack for pickup or Nairobi delivery.</p>
+            <p>Add pieces to your bag, send the order on WhatsApp, we confirm stock, you pay M-Pesa or cash, we pack for pickup or drop-off anywhere in Nairobi.</p>
           </div>
           <a class="btn btn--wa" style="margin-top:22px" href="${WA}?text=${encodeURIComponent("Hello ELI COLLECTION KAMUKUNJI, I would like directions / to check stock.")}" target="_blank" rel="noopener">Message the desk</a>
         </div>
